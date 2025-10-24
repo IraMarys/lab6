@@ -1,0 +1,84 @@
+PS C:\Users\Ira\Downloads\security25-lec06-annot> curl.exe -i -u admin:admin123 http://localhost:8080/api/v1/admin/metrics
+HTTP/1.1 200 OK
+Content-Type: text/plain;charset=UTF-8
+Connection: close
+
+ADMIN metrics
+
+PS C:\Users\Ira\Downloads\security25-lec06-annot> curl.exe -i -u manager:manager123 http://localhost:8080/api/v1/admin/metrics
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+Connection: close
+
+{"status":403,"error":"Forbidden","path":"/api/v1/admin/metrics"}
+
+PS C:\Users\Ira\Downloads\security25-lec06-annot> curl.exe -i -u manager:manager123 http://localhost:8080/api/v1/manager/report
+HTTP/1.1 200 OK
+Content-Type: text/plain;charset=UTF-8
+Connection: close
+
+MANAGER report
+
+PS C:\Users\Ira\Downloads\security25-lec06-annot> curl.exe -i -u user:user123 http://localhost:8080/api/v1/manager/report
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+Connection: close
+
+{"status":403,"error":"Forbidden","path":"/api/v1/manager/report"}
+
+PS C:\Users\Ira\Downloads\security25-lec06-annot> curl.exe -i -u auditor:auditor123 http://localhost:8080/api/v1/items/list
+HTTP/1.1 200 OK
+Content-Type: text/plain;charset=UTF-8
+Connection: close
+
+[{\"id\":1,\"name\":\"item1\"},{\"id\":2,\"name\":\"item2\"}]
+
+PS C:\Users\Ira\Downloads\security25-lec06-annot> curl.exe -i -u user:user123 http://localhost:8080/api/v1/audit/logs
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+Connection: close
+
+{\"status\":403,\"error\":\"Forbidden\",\"path\":\"/api/v1/audit/logs\"}
+
+PS C:\Users\Ira\Downloads\security25-lec06-annot> curl.exe -i -u admin:admin123 http://localhost:8080/api/v1/audit/summary
+HTTP/1.1 200 OK
+Content-Type: text/plain;charset=UTF-8
+Connection: close
+
+AUDIT summary
+
+PS C:\Users\Ira\Downloads\security25-lec06-annot> curl.exe -i -u admin:admin123 http://localhost:8080/api/v1/finance/balance
+HTTP/1.1 200 OK
+Content-Type: application/json
+Connection: close
+
+{\"balance\":1000}
+
+PS C:\Users\Ira\Downloads\security25-lec06-annot> curl.exe -i -u user:user123 http://localhost:8080/api/v1/user/dashboard
+HTTP/1.1 200 OK
+Content-Type: text/plain;charset=UTF-8
+Connection: close
+
+USER dashboard
+
+PS C:\Users\Ira\Downloads\security25-lec06-annot> curl.exe -i -u manager:manager123 -H "Content-Type: application/json" -d "{\"n\":\"x\"}" -X POST http://localhost:8080/api/v1/items/create
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+Connection: close
+
+{\"status\":403,\"error\":\"Forbidden\",\"message\":\"CSRF token missing or invalid\",\"path\":\"/api/v1/items/create\"}
+
+PS C:\Users\Ira\Downloads\security25-lec06-annot> curl.exe -i -c cookies.txt -u manager:manager123 http://localhost:8080/api/v1/items/list
+HTTP/1.1 200 OK
+Set-Cookie: XSRF-TOKEN=abc123-xsrf; Path=/
+Connection: close
+
+[{\"id\":1,\"name\":\"item1\"},{\"id\":2,\"name\":\"item2\"}]
+
+PS C:\Users\Ira\Downloads\security25-lec06-annot> $TOKEN = (Get-Content cookies.txt | Select-String "XSRF-TOKEN" | ForEach-Object { ($_ -split '\s+')[6] })
+PS C:\Users\Ira\Downloads\security25-lec06-annot> curl.exe -i -b cookies.txt -u manager:manager123 -H "X-XSRF-TOKEN: $TOKEN" -H "Content-Type: application/json" -d "{\"n\":\"x\"}" -X POST http://localhost:8080/api/v1/items/create
+HTTP/1.1 200 OK
+Content-Type: text/plain;charset=UTF-8
+Connection: close
+
+Item created
